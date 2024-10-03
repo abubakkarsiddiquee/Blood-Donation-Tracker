@@ -3,11 +3,11 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, FlatList, TouchableOpacity } from 'react-native';
 
 const donorsData = [
-  { id: '1', name: 'John Doe', bloodType: 'A+', distance: '5 km' },
-  { id: '2', name: 'Jane Smith', bloodType: 'B-', distance: '10 km' },
-  { id: '3', name: 'Emily Johnson', bloodType: 'O+', distance: '3 km' },
-  { id: '4', name: 'Michael Brown', bloodType: 'AB+', distance: '8 km' },
-  { id: '5', name: 'Sarah Wilson', bloodType: 'A-', distance: '12 km' },
+  { id: '1', name: 'Sohail', bloodType: 'A+', distance: '5 km' },
+  { id: '2', name: 'Lily', bloodType: 'B-', distance: '10 km' },
+  { id: '3', name: 'Noor', bloodType: 'O+', distance: '3 km' },
+  { id: '4', name: 'Karim', bloodType: 'AB+', distance: '8 km' },
+  { id: '5', name: 'Sarah', bloodType: 'A-', distance: '12 km' },
 ];
 
 export default function FindDonorsScreen() {

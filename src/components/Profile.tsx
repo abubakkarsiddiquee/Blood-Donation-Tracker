@@ -1,4 +1,5 @@
-// src/screens/Profile.tsx
+// src/components/Profile.tsx
+
 import React from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -33,6 +34,9 @@ export default function Profile({ route, navigation }: ProfileProps) {
       case 'Donation History':
         navigation.navigate('DonationHistoryScreen');
         break;
+      case 'Donation Pie Chart':
+        navigation.navigate('DonationPieChartScreen'); // Navigate to the new screen
+        break;
       default:
         break;
     }
@@ -65,6 +69,10 @@ export default function Profile({ route, navigation }: ProfileProps) {
           <TouchableOpacity style={styles.menuItem} onPress={() => handleMenuPress('Donation History')}>
             <Ionicons name="list-outline" size={24} color="#0056b3" />
             <Text style={styles.menuText}>Donation History</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => handleMenuPress('Donation Pie Chart')}>
+            <Ionicons name="bar-chart" size={24} color="#0056b3" />
+            <Text style={styles.menuText}>Donation Pie Chart</Text>
           </TouchableOpacity>
         </View>
       </View>

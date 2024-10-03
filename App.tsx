@@ -9,6 +9,7 @@ import EditProfile from './src/components/EditProfile';
 import FindDonorsScreen from './src/components/FindDonarScreen';
 import RequestDonationScreen from './src/components/RequestDonationScreen';
 import DonationHistoryScreen from './src/components/DonationHistoryScreen';
+import DonationPieChartScreen from './src/components/DonationPieChartScreen';
 
 const Stack = createStackNavigator();
 
@@ -23,6 +24,7 @@ export default function App() {
         <Stack.Screen name="FindDonorsScreen" component={FindDonorsScreen} />
         <Stack.Screen name= "RequestDonationScreen" component={RequestDonationScreen}/>
         <Stack.Screen name = "DonationHistoryScreen" component={DonationHistoryScreen}/>
+        <Stack.Screen name="DonationPieChartScreen" component={DonationPieChartScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

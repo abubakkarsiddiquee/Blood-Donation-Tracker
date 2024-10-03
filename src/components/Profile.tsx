@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'skyblue',
   },
   sidebar: {
     width: 250,

@@ -48,7 +48,7 @@ export default function Login({ navigation }) {
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    backgroundColor: '#f4f6f8', // Light gray professional background
+    backgroundColor: 'skyblue',
     justifyContent: 'center',
   },
   container: {

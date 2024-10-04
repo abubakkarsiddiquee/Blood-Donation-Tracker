@@ -1,15 +1,80 @@
-// src/screens/EditProfile.tsx
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export default function EditProfile({ route, navigation }) {
-  const { email, name } = route.params;
-  const [newEmail, setNewEmail] = useState(email);
-  const [newName, setNewName] = useState(name);
+export default function EditProfile({ navigation }) {
+  const [newEmail, setNewEmail] = useState('');
+  const [newName, setNewName] = useState('');
+  const [newBloodType, setNewBloodType] = useState('');
+  const [userId, setUserId] = useState(null);  // Store the logged-in user's ID
 
-  const handleSave = () => {
-    // Logic to save changes (e.g., API call or local storage update)
-    navigation.navigate('Profile', { email: newEmail, name: newName });
+  // Retrieve logged-in user's profile from AsyncStorage or backend
+  useEffect(() => {
+    const loadUserData = async () => {
+      try {
+        // Assuming user ID is saved in AsyncStorage after login
+        const storedId = await AsyncStorage.getItem('user_id');
+        const storedEmail = await AsyncStorage.getItem('user_email');
+        const storedName = await AsyncStorage.getItem('user_name');
+        const storedBloodType = await AsyncStorage.getItem('user_blood_type');
+
+        if (storedId) {
+          setUserId(storedId);  // Set the user ID
+        } else {
+          Alert.alert('Error', 'User ID is not available.');
+        }
+
+        if (storedEmail) setNewEmail(storedEmail);
+        if (storedName) setNewName(storedName);
+        if (storedBloodType) setNewBloodType(storedBloodType);
+      } catch (error) {
+        console.error('Failed to load user data:', error);
+        Alert.alert('Error', 'Failed to load user data.');
+      }
+    };
+
+    loadUserData();
+  }, []);
+
+  const handleSave = async () => {
+    if (!userId) {
+      Alert.alert('Error', 'User ID is missing, unable to update profile.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://192.168.0.105:5000/api/users/${userId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: newName,
+          email: newEmail,
+          blood_type: newBloodType,
+        }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log(result);  // Log the server response
+        Alert.alert('Success', result.message || 'Profile updated successfully');  // Fallback message
+        
+        // Update AsyncStorage with new user data
+        await AsyncStorage.setItem('user_email', newEmail);
+        await AsyncStorage.setItem('user_name', newName);
+        await AsyncStorage.setItem('user_blood_type', newBloodType);
+
+        navigation.navigate('Profile', { email: newEmail, name: newName, blood_type: newBloodType });
+      } else {
+        const errorData = await response.json();
+        console.error('Server Error:', errorData);  // Log the error from the server
+        Alert.alert('Error', errorData.message || 'Something went wrong');  // Fallback error message
+      }
+    } catch (error) {
+      console.error('Error saving changes:', error);  // Log the actual error
+      Alert.alert('Error', 'Failed to save changes. Please try again.');
+    }
   };
 
   return (
@@ -27,6 +92,12 @@ export default function EditProfile({ route, navigation }) {
         value={newEmail}
         onChangeText={setNewEmail}
         keyboardType="email-address"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Blood Type"
+        value={newBloodType} 
+        onChangeText={setNewBloodType}
       />
       <Button title="Save Changes" onPress={handleSave} />
     </View>

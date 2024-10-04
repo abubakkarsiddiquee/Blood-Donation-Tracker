@@ -16,7 +16,7 @@ const donationData: Donation[] = [
   { id: '2', name: 'Aisha', amount: 500, date: '2023-04-20' },
   { id: '3', name: 'Omar', amount: 1200, date: '2023-09-10' },
   { id: '4', name: 'Fatima', amount: 800, date: '2023-12-05' },
-  { id: '5', name: 'Zain', amount: 600, date: '2024-05-22' },
+  { id: '5', name: 'Jain', amount: 600, date: '2024-05-22' },
 ];
 
 // Prepare data for the line chart

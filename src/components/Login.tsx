@@ -1,73 +1,86 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
 
+// Function to check login credentials with backend
+const checkLogin = async (email: string, password: string) => {
+  try {
+    const response = await fetch('http://192.168.0.105:5000/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ email, password }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Invalid credentials');
+    }
+
+    return true; // Success
+  } catch (error) {
+    console.error('Error:', error);
+    return false; // Failed login
+  }
+};
+
 export default function Login({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
 
-  const handleLogin = () => {
-    // Temporary hardcoded email/password for this example
-    if (email === 'a@gmail.com' && password === '1233') {
-      navigation.navigate('Profile', { email, name: 'User' }); // Go to profile if valid
-      setErrorMessage(''); // Clear error message
+  const handleLogin = async () => {
+    if (email && password) {
+      const success = await checkLogin(email, password);
+      if (success) {
+        navigation.navigate('Profile', { email });
+      } else {
+        alert('Invalid email or password.');
+      }
     } else {
-      setErrorMessage('Invalid credentials!'); // Set error message to be displayed
+      alert('Please fill in all fields.');
     }
   };
 
   return (
-    <View style={styles.background}>
-      <View style={styles.container}>
-        <Text style={styles.title}>Login</Text>
-        {errorMessage ? <Text style={styles.error}>{errorMessage}</Text> : null}
+    <View style={commonStyles.background}>
+      <View style={localStyles.container}>
+        <Text style={localStyles.title}>Login</Text>
+
         <TextInput
           placeholder="Email"
-          style={styles.input}
+          style={localStyles.input}
           value={email}
           onChangeText={setEmail}
         />
         <TextInput
           placeholder="Password"
-          style={styles.input}
+          style={localStyles.input}
           value={password}
           onChangeText={setPassword}
           secureTextEntry
         />
+
         <Button title="Login" onPress={handleLogin} color="#007BFF" />
+        
         <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-          <Text style={styles.link}>Don't have an account? 
-            <Text style={styles.linkHighlight}> Sign Up</Text> {/* Ensure no text is outside of <Text> */}
-          </Text>
+          <Text style={localStyles.link}>Don't have an account? Signup</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 }
 
-const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-    backgroundColor: 'skyblue',
-    justifyContent: 'center',
-  },
+const localStyles = StyleSheet.create({
   container: {
+    flex: 1,
+    justifyContent: 'center',
     padding: 20,
-    backgroundColor: '#ffffff', // White box for form inputs
-    marginHorizontal: 20,
-    borderRadius: 10, // Rounded corners
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4, // Soft shadow for the container
-    elevation: 3, // Elevation for Android shadow
   },
   title: {
     fontSize: 24,
     marginBottom: 20,
     textAlign: 'center',
     fontWeight: 'bold',
-    color: '#333', // Darker color for title
+    color: '#333',
   },
   input: {
     height: 40,
@@ -79,16 +92,14 @@ const styles = StyleSheet.create({
   },
   link: {
     marginTop: 15,
+    color: 'blue',
     textAlign: 'center',
-    color: '#555', // Neutral gray for link text
   },
-  linkHighlight: {
-    color: '#007BFF', // More beautiful blue highlight for 'Sign Up'
-    fontWeight: 'bold',
-  },
-  error: {
-    color: 'red',
-    textAlign: 'center',
-    marginBottom: 15,
+});
+
+const commonStyles = StyleSheet.create({
+  background: {
+    flex: 1,
+    backgroundColor: '#e6f2ff',
   },
 });

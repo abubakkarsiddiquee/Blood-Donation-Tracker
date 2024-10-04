@@ -9,6 +9,7 @@ interface ProfileProps {
     params: {
       email: string;
       name: string;
+      blood_type: string;
     };
   };
   navigation: {
@@ -17,10 +18,10 @@ interface ProfileProps {
 }
 
 export default function Profile({ route, navigation }: ProfileProps) {
-  const { email, name = 'User' } = route.params; // Ensure name is provided
+  const { email, name = 'User', blood_type } = route.params; // Ensure name is provided
 
   const handleEditPress = () => {
-    navigation.navigate('EditProfile', { email, name });
+    navigation.navigate('EditProfile', { email, name, blood_type });
   };
 
   const handleMenuPress = (menu: string) => {
@@ -36,6 +37,9 @@ export default function Profile({ route, navigation }: ProfileProps) {
         break;
       case 'Donation Pie Chart':
         navigation.navigate('DonationPieChartScreen'); // Navigate to the new screen
+        break;
+      case 'Logout':
+        navigation.navigate('Login'); // Navigate to the login screen
         break;
       default:
         break;
@@ -73,6 +77,10 @@ export default function Profile({ route, navigation }: ProfileProps) {
           <TouchableOpacity style={styles.menuItem} onPress={() => handleMenuPress('Donation Pie Chart')}>
             <Ionicons name="bar-chart" size={24} color="#0056b3" />
             <Text style={styles.menuText}>Donation Pie Chart</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.menuItem} onPress={() => handleMenuPress('Logout')}>
+            <Ionicons name="log-out-outline" size={24} color="#ff4d4d" />
+            <Text style={styles.menuText}>Logout</Text>
           </TouchableOpacity>
         </View>
       </View>

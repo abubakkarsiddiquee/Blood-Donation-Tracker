@@ -5,6 +5,7 @@ const mysql = require('mysql2');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
+const nodemailer = require('nodemailer'); // Import Nodemailer
 require('dotenv').config();
 
 const app = express();
@@ -12,9 +13,10 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5000', // Replace with your frontend URL
-  credentials: true,               // Allow cookies from frontend
+  origin: 'http://10.10.251.233:5000',
+  credentials: true,
 }));
+
 app.use(bodyParser.json());
 
 // Create MySQL connection
@@ -45,10 +47,36 @@ app.use(session({
   saveUninitialized: false,
   store: sessionStore,
   cookie: {
-    expires: 600000,  // Session expiration (in milliseconds)
-    httpOnly: true,   // Prevents client-side JavaScript from accessing cookies
+    expires: 600000,
+    httpOnly: true,
   },
 }));
+
+// Create the Nodemailer transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+      user: process.env.EMAIL,
+      pass: process.env.PASSWORD,
+  },
+});
+
+// Function to send emails to donors
+const sendEmailToDonors = async (emails, bloodType) => {
+    const mailOptions = {
+        from: process.env.EMAIL,
+        to: emails.join(', '), // Join emails for multiple recipients
+        subject: `Urgent Blood Donation Request for ${bloodType}`,
+        text: `Dear Donor,\n\nWe are in urgent need of blood type ${bloodType}. If you are able to donate, please contact us at your earliest convenience.\n\nThank you for your support!`,
+    };
+
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('Emails sent successfully!');
+    } catch (error) {
+        console.error('Error sending emails:', error);
+    }
+};
 
 // Default route for root
 app.get('/', (req, res) => {
@@ -121,46 +149,75 @@ app.post('/api/login', (req, res) => {
       return res.status(400).json({ message: 'Invalid password' });
     }
 
-    // Create session for the logged-in user
+    // Create session for the logged-in user without blood_type
     req.session.user = {
       id: user.id,
       name: user.name,
       email: user.email,
-      blood_type: user.blood_type,
     };
 
-    res.json({ message: 'Login successful', userId: user.id });
+    res.json({
+      message: 'Login successful',
+      userId: user.id,
+      user: {
+        name: user.name,
+        email: user.email,
+      },
+    });
   });
 });
 
-// Search users endpoint
+// Search for donors by blood type or name
 app.get('/api/users/search', (req, res) => {
-  const { blood_type, name } = req.query;
+  const { query } = req.query;
 
-  let sql = 'SELECT * FROM Users WHERE 1=1'; // Start with a basic query
-
-  const values = [];
-  
-  if (blood_type) {
-      sql += ` AND blood_type = ?`;
-      values.push(blood_type);
+  if (!query) {
+    return res.status(400).json({ error: 'Search query is required' });
   }
 
-  if (name) {
-      sql += ` AND name LIKE ?`;
-      values.push(`%${name}%`); // For partial matches
-  }
+  // SQL query to match blood type or name
+  let sql = 'SELECT * FROM Users WHERE blood_type LIKE ? OR name LIKE ?';
+  const values = [`%${query}%`, `%${query}%`];
 
   db.query(sql, values, (err, results) => {
-      if (err) {
-          console.error('Query error:', err);
-          return res.status(500).json({ error: 'Database error' });
-      }
+    if (err) {
+      console.error('Query error:', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
 
-      // Return the found users
-      res.json(results);
+    res.json(results);
   });
 });
+
+// Endpoint to send email requests to donors
+app.post('/api/users/send-email', async (req, res) => {
+  const { blood_type } = req.body;
+
+  if (!blood_type) {
+      return res.status(400).json({ error: 'Blood type is required' });
+  }
+
+  try {
+      // Find donors with the specified blood type
+      const [donors] = await db.promise().query('SELECT * FROM Users WHERE blood_type = ?', [blood_type]);
+
+      if (donors.length === 0) {
+          return res.status(404).json({ error: 'No donors found for this blood type' });
+      }
+
+      // Extract email addresses from donors
+      const emails = donors.map(donor => donor.email);
+
+      // Send emails to each donor
+      await sendEmailToDonors(emails, blood_type);
+
+      res.status(200).json({ message: 'Emails sent successfully' });
+  } catch (error) {
+      console.error('Error sending emails:', error);
+      res.status(500).json({ error: 'Failed to send emails' });
+  }
+});
+
 
 // Start the server
 app.listen(PORT, () => {
